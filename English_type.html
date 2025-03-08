@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>逐行打字練習</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #text-container {
+            background-color: yellow;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px dashed black;
+            display: block;
+            white-space: pre-wrap;
+            max-height: a;
+            overflow-y: auto;
+        }
+        .line {
+            margin-bottom: 10px;
+            align-items: center;
+            word-break: keep-all
+            
+        }
+        .correct {
+            color: green;
+        }
+        .wrong {
+            color: red;
+        }
+        .input-box {
+            width: 70%;
+            font-size: 18px;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid black;
+        }
+        input {
+            font-family: inherit;
+            font-size: inherit;
+            vertical-align: middle; /* 保持與文本對齊 */
+        }
+        .white-space {
+            white-space: nowrap;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h2>逐行打字練習</h2>
+    <input type="file" id="fileInput" accept=".txt"><br><br>
+
+    <div id="text-container">請先上傳文本檔案...</div>
+
+    <script>
+        let textLines = [];
+        let textContainer = document.getElementById("text-container");
+        let fileInput = document.getElementById("fileInput");
+
+        // 監聽檔案上傳
+        fileInput.addEventListener("change", function(event) {
+            let file = event.target.files[0];
+            if (file) {
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    textLines = e.target.result.trim().split("\n"); // 按行拆分
+                    displayLines();
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function displayLines() {
+            textContainer.innerHTML = ""; // 清空舊內容
+            textLines.forEach((line, index) => {
+                let div = document.createElement("div");
+                div.classList.add("line");
+
+                let span = document.createElement("span");
+                span.textContent = line;
+                div.appendChild(span);
+
+                let input = document.createElement("input");
+                input.type = "text";
+                input.classList.add("input-box");
+                input.dataset.index = index;
+                input.addEventListener("input", checkInput);
+                input.addEventListener("keydown", handleEnter);
+                div.appendChild(input);
+
+                textContainer.appendChild(div);
+            });
+
+            // 自動聚焦第一行
+            let firstInput = document.querySelector(".input-box");
+            if (firstInput) firstInput.focus();
+        }
+
+        function checkInput(event) {
+            let input = event.target;
+            let index = input.dataset.index;
+            let expectedText = textLines[index];
+            let userText = input.value;
+
+            let formattedText = "";
+            for (let i = 0; i < expectedText.length; i++) {
+                if (i < userText.length) {
+                    if (userText[i] === expectedText[i]) {
+                        formattedText += `<span class="correct">${expectedText[i]}</span>`;
+                    } else {
+                        formattedText += `<span class="wrong">${expectedText[i]}</span>`;
+                    }
+                } else {
+                    formattedText += expectedText[i];
+                }
+            }
+            input.previousElementSibling.innerHTML = formattedText;
+        }
+
+        function handleEnter(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                let inputs = document.querySelectorAll(".input-box");
+                let index = [...inputs].indexOf(event.target);
+                if (index !== -1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
